@@ -23,6 +23,10 @@ PKG_BUILD_DEPENDS:=libzdb/host
 
 include $(INCLUDE_DIR)/package.mk
 
+ifeq ($(CONFIG_USE_MUSL),n)
+    LDFLAGS += -lnsl
+endif
+
 define Package/libzdb
     SECTION:=libs
     CATEGORY:=Libraries
@@ -63,8 +67,8 @@ define Host/Compile
 endef
 
 define Host/Install
-	$(INSTALL_DIR) $(STAGING_DIR_HOST)/bin
-	$(CP) $(HOST_BUILD_DIR)/tools/bin/filterh $(STAGING_DIR_HOST)/bin/
+	$(INSTALL_DIR) $(STAGING_DIR)/host/bin
+	$(CP) $(HOST_BUILD_DIR)/tools/bin/filterh $(STAGING_DIR)/host/bin/
 endef
 
 $(eval $(call HostBuild))

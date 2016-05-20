@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011-2014 OpenWrt.org
+# Copyright (C) 2011-2016 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pulseaudio
-PKG_VERSION:=6.0
-PKG_RELEASE:=2
+PKG_VERSION:=8.0
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://freedesktop.org/software/pulseaudio/releases/
-PKG_MD5SUM:=b691e83b7434c678dffacfa3a027750e
+PKG_MD5SUM:=8678442ba0bb4b4c33ac6f62542962df
 PKG_LICENSE:=LGPL-2.1+
 PKG_LICENSE_FILES:=GPL LICENSE
 
@@ -99,7 +99,8 @@ CONFIGURE_ARGS += \
 	--disable-udev \
 	--without-fftw \
 	--disable-avahi \
-	--disable-dbus
+	--disable-dbus \
+	--without-soxr
 
 CONFIGURE_VARS += \
 	PKG_CONFIG_LIBDIR="$(STAGING_DIR)/usr/lib/pkgconfig"
@@ -144,7 +145,7 @@ define Package/pulseaudio-daemon/install
 		./files/pulseaudio.init \
 		$(1)/etc/init.d/pulseaudio
 
-	$(INSTALL_CONF) \
+	$(INSTALL_DATA) \
 		$(PKG_INSTALL_DIR)/etc/pulse/* \
 		$(1)/etc/pulse
 
@@ -164,7 +165,6 @@ define Package/pulseaudio-daemon/install
 		$(PKG_INSTALL_DIR)/usr/lib/pulse-$(PKG_VERSION)/modules/module*.so \
 		$(1)/usr/lib/pulse-$(PKG_VERSION)/modules/
 
-	chmod -R 0644 $(1)/etc/pulse/*
 endef
 
 define Package/pulseaudio-tools/install
@@ -181,11 +181,11 @@ define Package/pulseaudio-profiles/install
 		$(1)/usr/share/pulseaudio/alsa-mixer/paths \
 		$(1)/usr/share/pulseaudio/alsa-mixer/profile-sets
 
-	$(INSTALL_CONF) \
+	$(INSTALL_DATA) \
 		$(PKG_INSTALL_DIR)/usr/share/pulseaudio/alsa-mixer/paths/* \
 		$(1)/usr/share/pulseaudio/alsa-mixer/paths
 
-	$(INSTALL_CONF) \
+	$(INSTALL_DATA) \
 		$(PKG_INSTALL_DIR)/usr/share/pulseaudio/alsa-mixer/profile-sets/* \
 		$(1)/usr/share/pulseaudio/alsa-mixer/profile-sets
 endef

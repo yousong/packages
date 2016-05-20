@@ -1,0 +1,49 @@
+diff -u --recursive krb5-1.14.1-vanilla/src/lib/kadm5/str_conv.c krb5-1.14.1/src/lib/kadm5/str_conv.c
+--- krb5-1.14.1-vanilla/src/lib/kadm5/str_conv.c	2016-03-26 19:49:13.651926364 -0400
++++ krb5-1.14.1/src/lib/kadm5/str_conv.c	2016-03-26 21:05:37.436084066 -0400
+@@ -131,7 +131,7 @@
+ {
+     int found = 0, invert = 0;
+     size_t i;
+-    krb5_flags flag;
++    krb5_flags flag = 0;
+     unsigned long ul;
+ 
+     for (i = 0; !found && i < NFTBL; i++) {
+diff -u --recursive krb5-1.14.1-vanilla/src/lib/krad/packet.c krb5-1.14.1/src/lib/krad/packet.c
+--- krb5-1.14.1-vanilla/src/lib/krad/packet.c	2016-03-26 19:49:13.634926238 -0400
++++ krb5-1.14.1/src/lib/krad/packet.c	2016-03-26 21:13:03.023144940 -0400
+@@ -253,7 +253,7 @@
+ {
+     krb5_error_code retval;
+     krad_packet *pkt;
+-    uchar id;
++    uchar id = 0;
+     size_t attrset_len;
+ 
+     pkt = packet_new();
+diff -u --recursive krb5-1.14.1-vanilla/src/plugins/preauth/pkinit/pkinit_crypto_openssl.c krb5-1.14.1/src/plugins/preauth/pkinit/pkinit_crypto_openssl.c
+--- krb5-1.14.1-vanilla/src/plugins/preauth/pkinit/pkinit_crypto_openssl.c	2016-03-26 19:49:13.653926379 -0400
++++ krb5-1.14.1/src/plugins/preauth/pkinit/pkinit_crypto_openssl.c	2016-03-26 21:17:07.151335877 -0400
+@@ -3618,7 +3618,7 @@
+ {
+     CK_ULONG i, r;
+     unsigned char *cp;
+-    size_t label_len;
++    size_t label_len = 0;
+     CK_ULONG count = 0;
+     CK_SLOT_ID_PTR slotlist;
+     CK_TOKEN_INFO tinfo;
+Only in krb5-1.14.1/src/plugins/preauth/pkinit: .pkinit_crypto_openssl.c.swp
+diff -u --recursive krb5-1.14.1-vanilla/src/util/profile/prof_file.c krb5-1.14.1/src/util/profile/prof_file.c
+--- krb5-1.14.1-vanilla/src/util/profile/prof_file.c	2016-03-26 19:49:13.633926230 -0400
++++ krb5-1.14.1/src/util/profile/prof_file.c	2016-03-26 21:03:07.934427580 -0400
+@@ -309,7 +309,7 @@
+     unsigned long frac;
+     time_t now;
+ #endif
+-    FILE *f;
++    FILE *f = NULL;
+     int isdir = 0;
+ 
+ #ifdef HAVE_STAT

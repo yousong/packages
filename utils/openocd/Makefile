@@ -26,6 +26,7 @@ PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
 
 define Package/openocd
   SECTION:=utils
@@ -39,7 +40,7 @@ define Package/openocd/description
 OpenOCD provides on-chip programming and debugging support with a
 layered architecture of JTAG interface and TAP support including:
 
-- (X)SVF playback to faciliate automated boundary scan and FPGA/CPLD
+- (X)SVF playback to facilitate automated boundary scan and FPGA/CPLD
   programming;
 - debug target support (e.g. ARM, MIPS): single-stepping,
   breakpoints/watchpoints, gprof profiling, etc;

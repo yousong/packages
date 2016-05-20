@@ -33,12 +33,12 @@ define Package/lispd
   CATEGORY:=Network
   TITLE:=Locator/ID separation protocol (using TUN)
   URL:=https://github.com/LISPmob
-  DEPENDS:= +librt +libopenssl +confuse +kmod-tun +uci +kmod-ipv6
+  DEPENDS:= +librt +libopenssl +confuse +kmod-tun +uci @IPV6
   $(call Package/lispd/default)
 endef
 
 define Package/lispd/description
-  This packet provides support for the Locator-ID Seperation Protocol.
+  This packet provides support for the Locator-ID Separation Protocol.
 endef
 
 MAKE_FLAGS += \

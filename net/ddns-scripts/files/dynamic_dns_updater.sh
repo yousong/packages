@@ -1,30 +1,26 @@
 #!/bin/sh
 # /usr/lib/ddns/dynamic_dns_updater.sh
 #
-# Original written by Eric Paul Bishop, January 2008
 #.Distributed under the terms of the GNU General Public License (GPL) version 2.0
+# Original written by Eric Paul Bishop, January 2008
 # (Loosely) based on the script on the one posted by exobyte in the forums here:
 # http://forum.openwrt.org/viewtopic.php?id=14040
-#
-# extended and partial rewritten in August 2014 by
-#.Christian Schoenebeck <christian dot schoenebeck at gmail dot com>
-# to support:
-# - IPv6 DDNS services
-# - DNS Server to retrieve registered IP including TCP transport (Ticket 7820)
-# - Proxy Server to send out updates
-# - force_interval=0 to run once (Luci Ticket 538)
-# - the usage of BIND's host command instead of BusyBox's nslookup if installed
-# - extended Verbose Mode and log file support for better error detection
-# - wait for interface to fully come up, before the first update is done
+# extended and partial rewritten
+#.2014-2016 Christian Schoenebeck <christian dot schoenebeck at gmail dot com>
 #
 # variables in small chars are read from /etc/config/ddns
 # variables in big chars are defined inside these scripts as global vars
 # variables in big chars beginning with "__" are local defined inside functions only
 # set -vx  	#script debugger
 
+. /usr/lib/ddns/dynamic_dns_functions.sh	# global vars are also defined here
+
 [ $# -lt 1 -o -n "${2//[0-3]/}" -o ${#2} -gt 1 ] && {
+	echo -e "\n  ddns-scripts Version: $VERSION"
 	echo -e "\n  USAGE:"
-	echo -e "  $0 [SECTION] [VERBOSE_MODE]\n"
+	echo    "  $0 [OPTION]"
+	echo    "  [OPTION]	  '-V' or '--version' display version and exit"
+	echo -e "\n  $0 [SECTION] [VERBOSE_MODE]\n"
 	echo    "  [SECTION]      - service section as defined in /etc/config/ddns"
 	echo    "  [VERBOSE_MODE] - '0' NO output to console"
 	echo    "                   '1' output to console"
@@ -36,7 +32,10 @@
 	exit 1
 }
 
-. /usr/lib/ddns/dynamic_dns_functions.sh	# global vars are also defined here
+[ "$1" = "-V" -o "$1" = "--version" ] && {
+	echo -e "ddns-scripts $VERSION\n"
+	exit 0
+}
 
 SECTION_ID="$1"
 VERBOSE_MODE=${2:-1}	# default mode is log to console
@@ -77,9 +76,12 @@ trap "trap_handler 15" 15	# SIGTERM	Termination
 # update_url	URL to use to update your "custom" DDNS service
 # update_script SCRIPT to use to update your "custom" DDNS service
 #
-# domain 	Your DNS name / replace [DOMAIN] in update_url
-# username 	Username of your DDNS service account / replace [USERNAME] in update_url
-# password 	Password of your DDNS service account / replace [PASSWORD] in update_url
+# lookup_host	FQDN of ONE of your at DDNS service defined host / required to validate if IP update happen/necessary
+# domain 	Nomally your DDNS hostname / replace [DOMAIN] in update_url
+# username 	Username of your DDNS service account / urlenceded and replace [USERNAME] in update_url
+# password 	Password of your DDNS service account / urlencoded and replace [PASSWORD] in update_url
+# param_enc	Optional parameter for (later) usage  / urlencoded and replace [PARAMENC] in update_url
+# param_opt	Optional parameter for (later) usage  / replace [PARAMOPT] in update_url
 #
 # use_https	use HTTPS to update DDNS service
 # cacert	file or directory where HTTPS can find certificates to verify server; 'IGNORE' ignore check of server certificate
@@ -140,14 +142,16 @@ ERR_LAST=$?	# save return code - equal 0 if SECTION_ID found
 	[ -f $LOGFILE ] && rm -f $LOGFILE		# clear logfile before first entry
 	write_log  7 "************ ************** ************** **************"
 	write_log  5 "PID '$$' started at $(eval $DATE_PROG)"
+	write_log  7 "ddns version  : $VERSION"
 	write_log  7 "uci configuration:\n$(uci -q show ddns | grep '=service' | sort)"
 	write_log 14 "Service section '$SECTION_ID' not defined"
 }
 
 write_log 7 "************ ************** ************** **************"
 write_log 5 "PID '$$' started at $(eval $DATE_PROG)"
+write_log 7 "ddns version  : $VERSION"
 write_log 7 "uci configuration:\n$(uci -q show ddns.$SECTION_ID | sort)"
-write_log 7 "ddns version  : $(opkg list-installed ddns-scripts | cut -d ' ' -f 3)"
+# write_log 7 "ddns version  : $(opkg list-installed ddns-scripts | cut -d ' ' -f 3)"
 case $VERBOSE_MODE in
 	0) write_log  7 "verbose mode  : 0 - run normal, NO console output";;
 	1) write_log  7 "verbose mode  : 1 - run normal, console mode";;
@@ -162,24 +166,41 @@ esac
 # determine what update url we're using if a service_name is supplied
 # otherwise update_url is set inside configuration (custom update url)
 # or update_script is set inside configuration (custom update script)
-[ -n "$service_name" ] && get_service_data update_url update_script
+[ -n "$service_name" ] && get_service_data update_url update_script SRV_ANSWER
 [ -z "$update_url" -a -z "$update_script" ] && write_log 14 "No update_url found/defined or no update_script found/defined!"
 [ -n "$update_script" -a ! -f "$update_script" ] && write_log 14 "Custom update_script not found!"
 
-# without domain and possibly username and password we can do nothing for you
-[ -z "$domain" ] && write_log 14 "Service section not configured correctly! Missing 'domain'"
+# temporary needed to convert existing uci settings
+[ -z "$lookup_host" ] && {
+	uci -q set ddns.$SECTION_ID.lookup_host="$domain"
+	uci -q commit ddns
+	lookup_host="$domain"
+}
+# later versions only check if configured correctly
+
+# without lookup host and possibly other required options we can do nothing for you
+[ -z "$lookup_host" ] && write_log 14 "Service section not configured correctly! Missing 'lookup_host'"
+
 [ -n "$update_url" ] && {
 	# only check if update_url is given, update_scripts have to check themselves
+	[ -z "$domain" ] && $(echo "$update_url" | grep "\[DOMAIN\]" >/dev/null 2>&1) && \
+		write_log 14 "Service section not configured correctly! Missing 'domain'"
 	[ -z "$username" ] && $(echo "$update_url" | grep "\[USERNAME\]" >/dev/null 2>&1) && \
 		write_log 14 "Service section not configured correctly! Missing 'username'"
 	[ -z "$password" ] && $(echo "$update_url" | grep "\[PASSWORD\]" >/dev/null 2>&1) && \
 		write_log 14 "Service section not configured correctly! Missing 'password'"
+	[ -z "$param_enc" ] && $(echo "$update_url" | grep "\[PARAMENC\]" >/dev/null 2>&1) && \
+		write_log 14 "Service section not configured correctly! Missing 'param_enc'"
+	[ -z "$param_opt" ] && $(echo "$update_url" | grep "\[PARAMOPT\]" >/dev/null 2>&1) && \
+		write_log 14 "Service section not configured correctly! Missing 'param_opt'"
 }
 
 # url encode username (might be email or something like this)
 # and password (might have special chars for security reason)
+# and optional parameter "param_enc"
 [ -n "$username" ] && urlencode URL_USER "$username"
 [ -n "$password" ] && urlencode URL_PASS "$password"
+[ -n "$param_enc" ] && urlencode URL_PENC "$param_enc"
 
 # verify ip_source 'script' if script is configured and executable
 if [ "$ip_source" = "script" ]; then
@@ -244,12 +265,15 @@ get_registered_ip REGISTERED_IP "NO_RETRY"
 ERR_LAST=$?
 #     No error    or     No IP set	 otherwise retry
 [ $ERR_LAST -eq 0 -o $ERR_LAST -eq 127 ] || get_registered_ip REGISTERED_IP
+# on IPv6 we use expanded version to be shure when comparing
+[ $use_ipv6 -eq 1 ] && expand_ipv6 "$REGISTERED_IP" REGISTERED_IP
 
 # loop endlessly, checking ip every check_interval and forcing an updating once every force_interval
 write_log 6 "Starting main loop at $(eval $DATE_PROG)"
 while : ; do
 
 	get_local_ip LOCAL_IP		# read local IP
+	[ $use_ipv6 -eq 1 ] && expand_ipv6 "$LOCAL_IP" LOCAL_IP	# on IPv6 we use expanded version
 
 	# prepare update
 	# never updated or forced immediate then NEXT_TIME = 0
@@ -289,7 +313,7 @@ while : ; do
 				&& write_log 6 "Update successful - IP '$LOCAL_IP' send" \
 				|| write_log 6 "Forced update successful - IP: '$LOCAL_IP' send"
 		else
-			write_log 3 "Can not update IP at DDNS Provider"
+			write_log 3 "IP update not accepted by DDNS Provider"
 		fi
 	fi
 
@@ -305,6 +329,7 @@ while : ; do
 
 	REGISTERED_IP=""		# clear variable
 	get_registered_ip REGISTERED_IP	# get registered/public IP
+	[ $use_ipv6 -eq 1 ] && expand_ipv6 "$REGISTERED_IP" REGISTERED_IP	# on IPv6 we use expanded version
 
 	# IP's are still different
 	if [ "$LOCAL_IP" != "$REGISTERED_IP" ]; then

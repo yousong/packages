@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libinput
-PKG_VERSION:=0.17.0
+PKG_VERSION:=1.2.3
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://www.freedesktop.org/software/libinput/
-# PKG_MD5SUM:=debfcd5153558eba25a8e71eb2534ae8
+PKG_MD5SUM:=9f3d603942fefac8860e0fc828a3df99
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=COPYING
@@ -26,12 +26,14 @@ include $(INCLUDE_DIR)/package.mk
 
 TARGET_CFLAGS+= -std=gnu99
 
+CONFIGURE_ARGS += --disable-libwacom --disable-tests --disable-documentation
+
 define Package/libinput
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=a library to handle input devices
   URL:=http://freedesktop.org/wiki/Software/libinput/
-  DEPENDS:=+libevdev +mtdev +udev
+  DEPENDS:=+libevdev +mtdev +eudev
 endef
 
 define Package/libinput/description
@@ -52,9 +54,10 @@ define Build/InstallDev
 endef
 
 define Package/libinput/install
-	$(INSTALL_DIR) $(1)/usr/lib/udev
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/*.so* $(1)/usr/lib/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/udev/* $(1)/usr/lib/udev
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/{udev,*.so*} $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(CP) $(PKG_INSTALL_DIR)/usr/bin/* $(1)/usr/bin
 endef
 
 $(eval $(call BuildPackage,libinput))

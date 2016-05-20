@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=avrdude
 PKG_VERSION:=6.1
-PKG_RELEASE:=1
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://download.savannah.gnu.org/releases/avrdude
@@ -23,6 +23,7 @@ PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
 
 define Package/avrdude
   SECTION:=utils
@@ -39,6 +40,10 @@ endef
 CONFIGURE_ARGS+= \
 	--disable-doc \
 	--disable-parport \
+	--enable-linuxgpio \
+
+TARGET_CFLAGS+= \
+	-D_GNU_SOURCE \
 
 define Package/avrdude/conffiles
 /etc/avrdude.conf

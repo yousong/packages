@@ -9,13 +9,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=LVM2
-PKG_VERSION:=2.02.121
+PKG_VERSION:=2.02.150
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-2.0 LGPL-2.1
 
 PKG_SOURCE:=$(PKG_NAME).$(PKG_VERSION).tgz
-PKG_SOURCE_URL:=ftp://sources.redhat.com/pub/lvm2
-PKG_MD5SUM:=702c61bf07a8fc6dc0db6e9d323d9f6d
+PKG_SOURCE_URL:=ftp://sources.redhat.com/pub/lvm2/releases
+PKG_MD5SUM:=4ec33d0914d870388f9020607e2d3998
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME).$(PKG_VERSION)
 
@@ -26,7 +26,7 @@ define Package/libdevmapper
   CATEGORY:=Libraries
   TITLE:=The Linux Kernel Device Mapper userspace library
   URL:=http://sourceware.org/dm/
-  DEPENDS:=+kmod-dm +libpthread
+  DEPENDS:=+kmod-dm +libpthread +libuuid
 endef
 
 define Package/libdevmapper/description
@@ -74,10 +74,14 @@ endef
 
 define Package/lvm2/install
 	$(INSTALL_DIR) $(1)/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/lvm $(1)/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/lvm $(1)/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/dmsetup $(1)/sbin
 	$(INSTALL_DIR) $(1)/etc/lvm
-	$(SED) '/^[[:space:]]*\(#\|$$$$\)/d; /cache_dir/s@.*@    cache_dir = "/tmp/lvm/cache"@' $(PKG_BUILD_DIR)/conf/example.conf
-	$(INSTALL_CONF) $(PKG_BUILD_DIR)/conf/example.conf $(1)/etc/lvm/lvm.conf
+	$(SED) '/^[[:space:]]*\(#\|$$$$\)/d; /cache_dir/s@.*@	cache_dir = "/tmp/lvm/cache"@' $(PKG_INSTALL_DIR)/etc/lvm/lvm.conf
+	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/lvm/lvm.conf $(1)/etc/lvm/
+	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/lvm/lvmlocal.conf $(1)/etc/lvm/
+	$(INSTALL_DIR) $(1)/etc/lvm/profile
+	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/lvm/profile/* $(1)/etc/lvm/profile/
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/lvm2.init $(1)/etc/init.d/lvm2
 	$(FIND) $(PKG_INSTALL_DIR)/usr/sbin/ -type l -exec $(CP) -a {} $(1)/sbin/ \;

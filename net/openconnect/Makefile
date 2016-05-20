@@ -8,12 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openconnect
-PKG_VERSION:=7.05
-PKG_RELEASE:=1
+PKG_VERSION:=7.06
+PKG_RELEASE:=4
+PKG_USE_MIPS16:=0
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=ftp://ftp.infradead.org/pub/openconnect/
-PKG_MD5SUM:=10cd4f61e8a11cdf793da2b0fd7a6003
+PKG_MD5SUM:=80f397911e1fed43d897d99be3d5f1a1
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_OPENCONNECT_GNUTLS \
@@ -49,7 +50,8 @@ CONFIGURE_ARGS += \
 	--disable-shared \
 	--with-vpnc-script=/lib/netifd/vpnc-script \
 	--without-libpcsclite \
-	--without-stoken
+	--without-stoken \
+	--without-lz4
 
 ifeq ($(CONFIG_OPENCONNECT_OPENSSL),y)
 CONFIGURE_ARGS += \

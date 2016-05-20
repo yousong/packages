@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2015 OpenWrt.org
+# Copyright (C) 2006-2016 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,17 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=php
-PKG_VERSION:=5.6.10
-PKG_RELEASE:=1
+PKG_VERSION:=5.6.19
+PKG_RELEASE:=2
 
-PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org>
+PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org>, Michael Heimpold <mhei@heimpold.de>
 
 PKG_LICENSE:=PHPv3.01
 PKG_LICENSE_FILES:=LICENSE
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://www.php.net/distributions/
-PKG_MD5SUM:=83b17e0cdc72a3a486f5e6342e76c45e
+PKG_MD5SUM:=aab960cc1b2bfbeb00d030a9d42b38bd
 
 PKG_FIXUP:=libtool autoreconf
 PKG_BUILD_PARALLEL:=1
@@ -32,7 +32,7 @@ PHP5_MODULES = \
 	ftp \
 	gettext gd gmp \
 	hash \
-	iconv \
+	iconv intl \
 	json \
 	ldap \
 	mbstring mcrypt mysql mysqli \
@@ -55,7 +55,6 @@ define Package/php5/Default
   CATEGORY:=Languages
   TITLE:=PHP5 Hypertext preprocessor
   URL:=http://www.php.net/
-  MAINTAINER:=Michael Heimpold <mhei@heimpold.de>
   DEPENDS:=php5
 endef
 
@@ -99,6 +98,7 @@ endef
 
 define Package/php5-cli
   $(call Package/php5/Default)
+  DEPENDS+= +PACKAGE_php5-mod-intl:libstdcpp
   TITLE+= (CLI)
 endef
 
@@ -109,6 +109,7 @@ endef
 
 define Package/php5-cgi
   $(call Package/php5/Default)
+  DEPENDS+= +PACKAGE_php5-mod-intl:libstdcpp
   TITLE+= (CGI & FastCGI)
 endef
 
@@ -236,6 +237,12 @@ ifneq ($(SDK)$(CONFIG_PACKAGE_php5-mod-iconv),)
   CONFIGURE_ARGS+= --with-iconv=shared,"$(ICONV_PREFIX)"
 else
   CONFIGURE_ARGS+= --without-iconv
+endif
+
+ifneq ($(SDK)$(CONFIG_PACKAGE_php5-mod-intl),)
+  CONFIGURE_ARGS+= --enable-intl=shared
+else
+  CONFIGURE_ARGS+= --disable-intl
 endif
 
 ifneq ($(SDK)$(CONFIG_PACKAGE_php5-mod-json),)
@@ -492,10 +499,10 @@ define Build/InstallDev
 	mkdir -p $(PKG_BUILD_DIR)/staging/usr/bin
 	make -C $(PKG_BUILD_DIR) install INSTALL_ROOT=$(PKG_BUILD_DIR)/staging
 	rm -f $(PKG_BUILD_DIR)/staging/usr/bin/php
-	$(CP) $(PKG_BUILD_DIR)/staging/* $(STAGING_DIR_HOST)
-	sed -i -e "s#prefix='/usr'#prefix='$(STAGING_DIR_HOST)/usr'#" $(STAGING_DIR_HOST)/usr/bin/phpize
-	sed -i -e "s#exec_prefix=\"\`eval echo /usr\`\"#exec_prefix='$(STAGING_DIR_HOST)/usr'#" $(STAGING_DIR_HOST)/usr/bin/phpize
-	sed -i -e "s#prefix=\"/usr\"#prefix=\"$(STAGING_DIR_HOST)/usr\"#" $(STAGING_DIR_HOST)/usr/bin/php-config
+	$(CP) $(PKG_BUILD_DIR)/staging/* $(STAGING_DIR)/host
+	sed -i -e "s#prefix='/usr'#prefix='$(STAGING_DIR)/host/usr'#" $(STAGING_DIR)/host/usr/bin/phpize
+	sed -i -e "s#exec_prefix=\"\`eval echo /usr\`\"#exec_prefix='$(STAGING_DIR)/host/usr'#" $(STAGING_DIR)/host/usr/bin/phpize
+	sed -i -e "s#prefix=\"/usr\"#prefix=\"$(STAGING_DIR)/host/usr\"#" $(STAGING_DIR)/host/usr/bin/php-config
 endef
 
 define BuildModule
@@ -544,6 +551,7 @@ $(eval $(call BuildModule,gettext,Gettext,+PACKAGE_php5-mod-gettext:libintl-full
 $(eval $(call BuildModule,gmp,GMP,+PACKAGE_php5-mod-gmp:libgmp))
 $(eval $(call BuildModule,hash,Hash))
 $(eval $(call BuildModule,iconv,iConv,$(ICONV_DEPENDS)))
+$(eval $(call BuildModule,intl,Internationalization Functions,+PACKAGE_php5-mod-intl:icu))
 $(eval $(call BuildModule,json,JSON))
 $(eval $(call BuildModule,ldap,LDAP,+PACKAGE_php5-mod-ldap:libopenldap +PACKAGE_php5-mod-ldap:libsasl2))
 $(eval $(call BuildModule,mbstring,MBString))

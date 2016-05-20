@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sslh
 PKG_VERSION:=v1.17
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://rutschle.net/tech/
@@ -36,8 +36,10 @@ define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		CC="$(TARGET_CC)" \
 		CFLAGS="$(TARGET_CFLAGS)" \
+		LDFLAGS="$(TARGET_LDFLAGS)" \
 		USELIBCONFIG= \
 		USELIBWRAP= \
+		USELIBPCRE= \
 		all
 endef
 

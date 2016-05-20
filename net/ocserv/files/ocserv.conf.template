@@ -18,7 +18,7 @@ auth = "|AUTH|"
 # A banner to be displayed on clients
 banner = "Welcome to OpenWRT"
 
-isolate-workers = true
+#isolate-workers = true
 
 # When the server has a dynamic DNS address (that may change),
 # should set that to true to ask the client to resolve again on
@@ -268,15 +268,14 @@ ipv4-netmask = |NETMASK|
 
 # The IPv6 subnet that leases will be given from.
 |ENABLE_IPV6|ipv6-network = |IPV6ADDR|
-|ENABLE_IPV6|ipv6-prefix = |IPV6PREFIX|
 
 # The domains over which the provided DNS should be used. Use
 # multiple lines for multiple domains.
-#split-dns = example.com
+|ENABLE_SPLIT_DNS|split-dns = |DEFAULT_DOMAIN|
 
 # Prior to leasing any IP from the pool ping it to verify that
 # it is not in use by another (unrelated to this server) host.
-ping-leases = false
+ping-leases = |PING_LEASES|
 
 # Unset to assign the default MTU of the device
 # mtu = 
@@ -344,8 +343,11 @@ config-per-group = /etc/ocserv/config-per-group/
 # The following example is from linux systems. %{R} should be something
 # like 192.168.2.0/24
 
-route-add-cmd = "/sbin/route add -net %{R} dev %{D}"
-route-del-cmd = "/sbin/route del -net %{R} dev %{D}"
+#route-add-cmd = "/usr/sbin/ip route add %{R} dev %{D}"
+#route-del-cmd = "/usr/sbin/ip route delete %{R} dev %{D}"
+
+route-add-cmd = "/sbin/route add -net %{RI} dev %{D}"
+route-del-cmd = "/sbin/route del -net %{RI} dev %{D}"
 
 # This option allows to forward a proxy. The special strings '%{U}'
 # and '%{G}', if present will be replaced by the username and group name.
@@ -377,3 +379,5 @@ cisco-client-compat = |CISCO_COMPAT|
 # Option to allow sending arbitrary custom headers to the client after
 # authentication and prior to VPN tunnel establishment.
 #custom-header = "X-My-Header: hi there"
+
+expose-iroutes = true

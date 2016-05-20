@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=znc
-PKG_VERSION:=1.4
-PKG_RELEASE:=3
+PKG_VERSION:=1.6.2
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://znc.in/releases \
 		http://znc.in/releases/archive
-PKG_MD5SUM:=630cb74db34d2d5451ba30b47869f6bb
+PKG_MD5SUM:=89f6696ed366661f7432ece343fd19d0
 
 PKG_MAINTAINER:=Jonas Gorski <jogo@openwrt.org>
 PKG_LICENSE:=Apache-2.0
@@ -81,7 +81,7 @@ define module
 	# include webadmin page templates if existing
 	if [ -d $$(PKG_BUILD_DIR)/modules/data/$(subst -,_,$(strip $(1))) ]; then \
 		$(INSTALL_DIR) $$(1)/usr/share/znc/modules ;\
-		$(CP) -r $$(PKG_BUILD_DIR)/modules/data/$(subst -,_,$(strip $(1))) $$(1)/usr/share/znc/modules ;\
+		$(CP) $$(PKG_BUILD_DIR)/modules/data/$(subst -,_,$(strip $(1))) $$(1)/usr/share/znc/modules ;\
 	fi
   endef
 
@@ -104,9 +104,9 @@ define webadmin
 	$(INSTALL_DIR) $$(1)/usr/lib/znc/
 	$(INSTALL_BIN) $$(PKG_BUILD_DIR)/modules/webadmin.so $$(1)/usr/lib/znc/
 	$(INSTALL_DIR) $$(1)/usr/share/znc/modules
-	$(CP) -r $$(PKG_BUILD_DIR)/modules/data/webadmin $$(1)/usr/share/znc/modules
+	$(CP) $$(PKG_BUILD_DIR)/modules/data/webadmin $$(1)/usr/share/znc/modules
 	$(INSTALL_DIR) $$(1)/usr/share/znc/webskins/
-	$(CP) -r $$(PKG_BUILD_DIR)/webskins/_default_ $$(1)/usr/share/znc/webskins/
+	$(CP) $$(PKG_BUILD_DIR)/webskins/_default_ $$(1)/usr/share/znc/webskins/
   endef
 
   ZNC_MODULES += znc-mod-webadmin
@@ -126,7 +126,7 @@ define webskin
 
   define Package/znc-webskin-$(strip $(1))/install
 	$(INSTALL_DIR) $$(1)/usr/share/znc/webskins/
-	$(CP) -r $$(PKG_BUILD_DIR)/webskins/$(strip $(1)) $$(1)/usr/share/znc/webskins/
+	$(CP) $$(PKG_BUILD_DIR)/webskins/$(strip $(1)) $$(1)/usr/share/znc/webskins/
   endef
   ZNC_MODULES += znc-webskin-$(strip $(1))
 endef
@@ -135,6 +135,8 @@ endef
 
 $(eval $(call module,adminlog,Log user connects and disconnects and failed \
 	logins to file or syslog.))
+
+$(eval $(call module,alias,Provides bouncer-side command alias support.))
 
 $(eval $(call module,autoattach,Reattaches you to channels on activity.))
 
@@ -198,6 +200,8 @@ $(eval $(call module,flooddetach,This module detaches you from channels which \
 $(eval $(call module,identfile,Places the ident of a user to a file when they \
 	 are trying to connect.))
 
+$(eval $(call module,imapauth,Allow users to authenticate via IMAP.))
+
 $(eval $(call module,keepnick,Tries to get you your primary nick.))
 
 $(eval $(call module,kickrejoin,Implements auto-rejoin-on-kick.))
@@ -208,6 +212,8 @@ $(eval $(call module,listsockets,This module displays a list of all open \
 	sockets in ZNC.))
 
 $(eval $(call module,log,Log conversations to file.))
+
+$(eval $(call module,missingmotd,Sends 422 to clients when they login.))
 
 $(eval $(call module,modules_online,This module fakes the online status of \
 	ZNC-*users.))
@@ -271,8 +277,18 @@ CONFIGURE_VARS += \
 	LIBS="-lstdc++ -lm -lssl -lcrypto $(LIBGCC_S) -lc"
 
 CONFIGURE_ARGS += \
-	--disable-c-ares \
-	--disable-perl
+	--disable-charset \
+	--disable-cyrus \
+	--disable-debug \
+	--enable-largefile \
+	--disable-perl \
+	--enable-poll \
+	--disable-python \
+	--enable-ssl \
+	--disable-swig \
+	--disable-tcl \
+	--enable-tdns \
+	--enable-zlib
 
 define Build/Configure
 	$(call Build/Configure/Default,)
