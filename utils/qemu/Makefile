@@ -9,11 +9,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qemu
-PKG_VERSION:=2.12.1
+PKG_VERSION:=3.0.0
 PKG_RELEASE:=1
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_HASH:=4150809a52d821398dfd38c94b065513ef26b393fda9aba4bb6f09644cf1e5ca
-PKG_SOURCE_URL:=http://wiki.qemu-project.org/download/
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_HASH:=8d7af64fe8bd5ea5c3bdf17131a8b858491bcce1ee3839425a6d91fb821b5713
+PKG_SOURCE_URL:=http://download.qemu.org/
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=LICENSE tcg/LICENSE
 PKG_MAINTAINER:=Yousong Zhou <yszhou4tech@gmail.com>
@@ -256,12 +256,8 @@ CONFIGURE_ARGS +=			\
 	--disable-strip			\
 	--disable-werror		\
 
-QEMU_CONFIGURE_TARGET_LIST := $(foreach target,$(QEMU_TARGET_LIST),$(if $(CONFIG_PACKAGE_qemu-$(target)),$(target)))
-CONFIGURE_ARGS += --target-list='$(QEMU_CONFIGURE_TARGET_LIST)'
-
-ifneq ($(CONFIG_PACKAGE_qemu-ga),)
-CONFIGURE_ARGS += --enable-guest-agent
-endif
+CONFIGURE_ARGS += --target-list='$(foreach target,$(QEMU_TARGET_LIST),$(if $(CONFIG_PACKAGE_qemu-$(target)),$(target)))'
+CONFIGURE_ARGS += $(if $(CONFIG_PACKAGE_qemu-ga),--enable-guest-agent)
 
 TARGET_LDFLAGS += -Wl,--as-needed
 MAKE_VARS += V=s
