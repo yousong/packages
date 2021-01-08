@@ -1,0 +1,31 @@
+From 91d3ccfe3e1ebf3113f9c612b7f484175b6966fe Mon Sep 17 00:00:00 2001
+From: Yousong Zhou <yszhou4tech@gmail.com>
+Date: Sat, 9 Jan 2021 14:55:36 +0800
+Subject: [PATCH] pc-bios: fix compilation when $(AS) is actually gcc driver
+
+---
+ pc-bios/optionrom/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pc-bios/optionrom/Makefile b/pc-bios/optionrom/Makefile
+index 084fc10f05..8c6f206365 100644
+--- a/pc-bios/optionrom/Makefile
++++ b/pc-bios/optionrom/Makefile
+@@ -36,7 +36,7 @@ override CFLAGS += -m32 -include $(SRC_DIR)/code16gcc.h
+ endif
+ 
+ Wa = -Wa,
+-override ASFLAGS += -32
++override ASFLAGS += $(Wa)-32
+ override CFLAGS += $(call cc-option, $(Wa)-32)
+ 
+ LD_I386_EMULATION ?= elf_i386
+@@ -48,7 +48,7 @@ all: multiboot.bin linuxboot.bin linuxboot_dma.bin kvmvapic.bin pvh.bin
+ pvh.img: pvh.o pvh_main.o
+ 
+ %.o: %.S
+-	$(call quiet-command,$(CPP) $(CPPFLAGS) -c -o - $< | $(AS) $(ASFLAGS) -o $@,"AS","$@")
++	$(call quiet-command,$(CPP) $(CPPFLAGS) -c -o - $< | $(AS) $(ASFLAGS) -o $@ -x assembler -,"AS","$@")
+ 
+ %.o: %.c
+ 	$(call quiet-command,$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@,"CC","$@")

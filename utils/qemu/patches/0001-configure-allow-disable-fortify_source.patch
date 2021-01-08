@@ -1,6 +1,6 @@
-From 871bc03884e8dd4a4b50d05022e347e72f4733d9 Mon Sep 17 00:00:00 2001
+From ed72c3231170727688d2111664d7276557b4e07b Mon Sep 17 00:00:00 2001
 From: Yousong Zhou <yszhou4tech@gmail.com>
-Date: Mon, 11 May 2020 10:46:09 +0800
+Date: Sat, 9 Jan 2021 14:50:52 +0800
 Subject: [PATCH] configure: allow disable fortify_source
 
 Tell build system of qemu to not add _FORTIFY_SOURCE options and let the
@@ -10,12 +10,12 @@ OpenWrt base build system decide flavor of fortify_source to use
  1 file changed, 2 insertions(+)
 
 diff --git a/configure b/configure
-index 23b5e93752..c8d2ac1c3e 100755
+index 18c26e0389..704aa3e76d 100755
 --- a/configure
 +++ b/configure
-@@ -1601,6 +1601,8 @@ for opt do
+@@ -1525,6 +1525,8 @@ for opt do
    ;;
-   --gdb=*) gdb_bin="$optarg"
+   --disable-libdaxctl) libdaxctl=no
    ;;
 +  --disable-fortify-source) fortify_source="no"
 +  ;;

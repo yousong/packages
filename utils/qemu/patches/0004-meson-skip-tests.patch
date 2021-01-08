@@ -1,0 +1,33 @@
+From dd8f6ccc4a90bbb856f15967e20176b1e487acb7 Mon Sep 17 00:00:00 2001
+From: Yousong Zhou <yszhou4tech@gmail.com>
+Date: Tue, 12 Jan 2021 14:02:43 +0800
+Subject: [PATCH] meson: skip tests
+
+---
+ meson.build | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index e3386196ba..10d0be46aa 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1575,8 +1575,8 @@ linux_user_ss.add(files('gdbstub.c', 'thunk.c'))
+ specific_ss.add_all(when: 'CONFIG_LINUX_USER', if_true: linux_user_ss)
+ 
+ # needed for fuzzing binaries
+-subdir('tests/qtest/libqos')
+-subdir('tests/qtest/fuzz')
++#subdir('tests/qtest/libqos')
++#subdir('tests/qtest/fuzz')
+ 
+ ########################
+ # Library dependencies #
+@@ -1944,7 +1944,7 @@ subdir('scripts')
+ subdir('tools')
+ subdir('pc-bios')
+ subdir('docs')
+-subdir('tests')
++#subdir('tests')
+ if 'CONFIG_GTK' in config_host
+   subdir('po')
+ endif

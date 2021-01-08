@@ -9,10 +9,10 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qemu
-PKG_VERSION:=5.0.0
-PKG_RELEASE:=4
+PKG_VERSION:=5.2.0
+PKG_RELEASE:=1
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_HASH:=2f13a92a0fa5c8b69ff0796b59b86b080bbb92ebad5d301a7724dd06b5e78cb6
+PKG_HASH:=cb18d889b628fbe637672b0326789d9b0e3b8027e0445b936537c78549df17bc
 PKG_SOURCE_URL:=http://download.qemu.org/
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=LICENSE tcg/LICENSE
@@ -300,6 +300,7 @@ CONFIGURE_ARGS +=			\
 	--enable-vhost-scsi		\
 	--enable-vhost-user		\
 	--enable-vhost-user-fs		\
+	--enable-vhost-vdpa		\
 	--enable-vhost-vsock		\
 
 # Image formats support
@@ -375,12 +376,16 @@ CONFIGURE_ARGS +=			\
 	--disable-debug-mutex		\
 	--disable-debug-tcg		\
 	--disable-docs			\
+	--disable-fuzzing		\
 	--disable-gcrypt		\
+	--disable-gettext		\
 	--disable-git-update		\
 	--disable-glusterfs		\
 	--disable-gnutls		\
 	--disable-guest-agent-msi	\
 	--disable-jemalloc		\
+	--disable-keyring		\
+	--disable-libdaxctl		\
 	--disable-libiscsi		\
 	--disable-libnfs		\
 	--disable-libpmem		\
@@ -404,6 +409,7 @@ CONFIGURE_ARGS +=			\
 	--disable-qom-cast-debug	\
 	--disable-rbd			\
 	--disable-rdma			\
+	--disable-rng-none		\
 	--disable-sanitizers		\
 	--disable-seccomp		\
 	--disable-sheepdog		\
@@ -413,18 +419,19 @@ CONFIGURE_ARGS +=			\
 	--disable-strip			\
 	--disable-tcg-interpreter	\
 	--disable-tcmalloc		\
-	--disable-tools			\
 	--disable-tpm			\
+	--disable-u2f			\
 	--disable-usb-redir		\
 	--disable-vde			\
 	--disable-virtfs		\
-	--disable-vxhs			\
+	--disable-virtiofsd		\
 	--disable-werror		\
 	--disable-xen-pci-passthrough	\
 	--disable-xkbcommon		\
 	--disable-xfsctl		\
 	--disable-zstd			\
 
+CONFIGURE_ARGS += --enable-tools
 CONFIGURE_ARGS += --target-list='$(foreach target,$(qemu-target-list),$(if $(CONFIG_PACKAGE_qemu-$(target)),$(target)))'
 CONFIGURE_ARGS += $(if $(CONFIG_PACKAGE_qemu-ga),--enable-guest-agent)
 
@@ -441,7 +448,7 @@ QEMU_MAKE_TARGETS := \
 	$(if $(CONFIG_PACKAGE_qemu-bridge-helper),qemu-bridge-helper) \
 	$(if $(CONFIG_PACKAGE_qemu-img),qemu-img) \
 	$(if $(CONFIG_PACKAGE_qemu-nbd),qemu-nbd) \
-	$(foreach target,$(qemu-target-list),$(if $(CONFIG_PACKAGE_qemu-$(target)),$(target)/all)) \
+	$(foreach target,$(qemu-target-list),$(if $(CONFIG_PACKAGE_qemu-$(target)),$(target))) \
 
 define Build/Compile
 	$(if $(strip $(QEMU_MAKE_TARGETS)),$(call Build/Compile/Default,$(QEMU_MAKE_TARGETS)))

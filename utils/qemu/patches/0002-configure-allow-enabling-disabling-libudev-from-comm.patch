@@ -1,6 +1,6 @@
-From 608b183335725bcc1c2dd8b615551c49ec3b9c88 Mon Sep 17 00:00:00 2001
+From ef7a9bbf0144d35012c214195fb0c5b727e4b942 Mon Sep 17 00:00:00 2001
 From: Yousong Zhou <yszhou4tech@gmail.com>
-Date: Mon, 11 May 2020 10:46:37 +0800
+Date: Sat, 9 Jan 2021 14:51:29 +0800
 Subject: [PATCH] configure: allow enabling/disabling libudev from command line
 
 ---
@@ -8,17 +8,17 @@ Subject: [PATCH] configure: allow enabling/disabling libudev from command line
  1 file changed, 4 insertions(+)
 
 diff --git a/configure b/configure
-index c8d2ac1c3e..cf3f8ffdd7 100755
+index 704aa3e76d..cc13bb1c2e 100755
 --- a/configure
 +++ b/configure
-@@ -1601,6 +1601,10 @@ for opt do
+@@ -1527,6 +1527,10 @@ for opt do
    ;;
-   --gdb=*) gdb_bin="$optarg"
+   --disable-fortify-source) fortify_source="no"
    ;;
 +  --enable-libudev) libudev=yes
 +  ;;
 +  --disable-libudev) libudev=no
 +  ;;
-   --disable-fortify-source) fortify_source="no"
-   ;;
    *)
+       echo "ERROR: unknown option $opt"
+       echo "Try '$0 --help' for more information"

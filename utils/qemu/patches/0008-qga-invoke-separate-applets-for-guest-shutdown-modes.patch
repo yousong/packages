@@ -1,4 +1,4 @@
-From 80ec6872aceb18c68b1cf5b6f8acd6ad667cbd4f Mon Sep 17 00:00:00 2001
+From c3a2aa2a2e14ab5456416b1c78cd653373a99a7b Mon Sep 17 00:00:00 2001
 From: Yousong Zhou <yszhou4tech@gmail.com>
 Date: Thu, 17 Dec 2020 15:55:55 +0800
 Subject: [PATCH] qga: invoke separate applets for guest-shutdown modes
@@ -12,7 +12,7 @@ https://gitlab.alpinelinux.org/alpine/aports/commit/76b81b486480fd9c3294cd420bcf
  1 file changed, 5 insertions(+)
 
 diff --git a/qga/commands-posix.c b/qga/commands-posix.c
-index a52af0315f..623d856c64 100644
+index c089e38120..d2cd1ad64b 100644
 --- a/qga/commands-posix.c
 +++ b/qga/commands-posix.c
 @@ -84,6 +84,7 @@ static void ga_wait_child(pid_t pid, int *status, Error **errp)
